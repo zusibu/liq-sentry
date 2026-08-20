@@ -1,0 +1,11 @@
+{
+  "name": "liq-bot-cloud",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "dependencies": {
+    "viem": "^2.46.0"
+  }
+}
