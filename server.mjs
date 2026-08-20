@@ -41,6 +41,7 @@ async function gql(q) {
 }
 
 const stats = { startedAt: Date.now(), cycles: 0, priceChanges: 0, alerts: 0 };
+let healthHits = 0;
 let markets = [];
 let borrowers = new Map();
 const alerted = new Set();
@@ -123,8 +124,9 @@ async function cycle() {
 }
 
 const server = http.createServer((req, res) => {
+  healthHits++;
   res.writeHead(200, { "content-type": "application/json" });
-  res.end(JSON.stringify({ ok: true, uptimeMin: Math.round((Date.now() - stats.startedAt) / 60000), cycles: stats.cycles, alerts: stats.alerts, markets: markets.length, borrowers: [...borrowers.values()].reduce((a, x) => a + x.length, 0) }));
+  res.end(JSON.stringify({ ok: true, uptimeMin: Math.round((Date.now() - stats.startedAt) / 60000), cycles: stats.cycles, alerts: stats.alerts, pings: healthHits, markets: markets.length, borrowers: [...borrowers.values()].reduce((a, x) => a + x.length, 0) }));
 });
 server.listen(process.env.PORT || 3000);
 
@@ -147,7 +149,7 @@ async function main() {
       if (Date.now() - lastHeartbeat > 60 * 60 * 1000) {
         const h = Math.round((Date.now() - stats.startedAt) / 3600000);
         const totalB2 = [...borrowers.values()].reduce((a, x) => a + x.length, 0);
-        tg("🫀 心跳: 已运行 " + h + "h | 周期 " + stats.cycles + " | 价格变化 " + stats.priceChanges + " | 警报 " + stats.alerts + " | 市场 " + markets.length + " | 借款人 " + totalB2);
+        tg("🫀 心跳: 已运行 " + h + "h | 周期 " + stats.cycles + " | 价格变化 " + stats.priceChanges + " | 警报 " + stats.alerts + " | 被ping " + healthHits + " 次 | 市场 " + markets.length + " | 借款人 " + totalB2);
         lastHeartbeat = Date.now();
       }
     } catch {}
